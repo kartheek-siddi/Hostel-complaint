@@ -1,0 +1,7 @@
+node_modules/
+.env
+data.json
+hostel.db
+hostel.db-journal
+hostel.db-wal
+hostel.db-shm

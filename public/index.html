@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hostel Complaint Management System</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --text:#1a1c20; --muted:#6b7280; --border:#e2e4e9;
+  --accent:#2f5fb3; --accent-dark:#234a8f; --accent-bg:#e8eefb;
+  --ok:#1f8a53; --ok-bg:#e5f6ec; --warn:#b5780c; --warn-bg:#fdf2de; --danger:#c0362c; --danger-bg:#fbe9e7;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+.hidden{display:none !important;}
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;max-width:420px;width:100%;}
+.login-card h1{font-size:1.3rem;margin:0 0 4px;}
+.login-card p.sub{color:var(--muted);font-size:0.88rem;margin:0 0 20px;}
+.tabs{display:flex;gap:8px;margin-bottom:18px;background:var(--bg);border-radius:10px;padding:4px;}
+.tab{flex:1;text-align:center;padding:9px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;color:var(--muted);}
+.tab.active{background:var(--accent);color:#fff;}
+.role-tabs{display:flex;gap:8px;margin-bottom:16px;}
+.role-tab{flex:1;text-align:center;padding:8px;border-radius:8px;cursor:pointer;font-size:0.82rem;font-weight:600;border:1px solid var(--border);color:var(--muted);}
+.role-tab.active{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
+label{font-weight:600;font-size:0.85rem;display:block;margin:10px 0 6px;}
+input,select,textarea{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.9rem;font-family:inherit;}
+.btn{background:var(--accent);color:#fff;border:none;padding:11px 18px;border-radius:9px;font-size:0.9rem;font-weight:600;cursor:pointer;}
+.btn-outline{background:transparent;color:var(--accent);border:1px solid var(--accent);}
+.btn-danger{background:var(--danger);}
+.btn-sm{padding:6px 12px;font-size:0.8rem;}
+.full-w{width:100%;margin-top:16px;}
+.err{color:var(--danger);font-size:0.82rem;margin-top:8px;display:none;}
+#appScreen{display:none;}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 20px 60px;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+@media (max-width:700px){.stats{grid-template-columns:1fr 1fr;}}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;}
+.stat .num{font-size:1.6rem;font-weight:700;}
+.stat .lbl{font-size:0.78rem;color:var(--muted);}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media (max-width:600px){.grid2{grid-template-columns:1fr;}}
+textarea{min-height:90px;resize:vertical;}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.filter-row select,.filter-row input{width:auto;min-width:140px;}
+.complaint{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;}
+.complaint-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.complaint-title{font-weight:600;font-size:0.95rem;}
+.complaint-meta{font-size:0.78rem;color:var(--muted);margin-top:3px;}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:0.75rem;font-weight:600;}
+.badge.pending{background:var(--warn-bg);color:var(--warn);}
+.badge.progress{background:var(--accent-bg);color:var(--accent);}
+.badge.resolved{background:var(--ok-bg);color:var(--ok);}
+.badge.priority-emergency{background:var(--danger);color:#fff;}
+.badge.priority-high{background:var(--danger-bg);color:var(--danger);}
+.emergency-banner{background:var(--danger-bg);border:1px solid var(--danger);border-radius:12px;padding:14px 16px;margin-bottom:20px;}
+.emergency-banner h4{margin:0 0 8px;color:var(--danger);font-size:0.92rem;}
+.emergency-banner .e-item{font-size:0.85rem;padding:4px 0;}
+.badge.priority-medium{background:var(--warn-bg);color:var(--warn);}
+.badge.priority-low{background:var(--ok-bg);color:var(--ok);}
+.complaint-desc{font-size:0.88rem;margin-top:10px;}
+.complaint-remarks{font-size:0.82rem;margin-top:8px;padding:8px 10px;background:var(--bg);border-radius:8px;color:var(--muted);}
+.complaint-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center;}
+.empty-state{text-align:center;color:var(--muted);padding:40px 20px;font-size:0.9rem;}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <h1>🏠 Hostel Complaint Management</h1>
+    <p class="sub">Real accounts, hashed passwords, SQLite database.</p>
+
+    <div class="tabs">
+      <div class="tab active" id="tabLogin">Log In</div>
+      <div class="tab" id="tabRegister">Register</div>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <label>Email</label>
+      <input type="text" id="loginEmail">
+      <label>Password</label>
+      <input type="password" id="loginPassword">
+      <button class="btn full-w" id="loginBtn">Log In</button>
+      <div class="err" id="loginErr"></div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="registerForm" class="hidden">
+      <div class="role-tabs">
+        <div class="role-tab active" data-role="student" id="regTabStudent">Student</div>
+        <div class="role-tab" data-role="admin" id="regTabAdmin">Warden / Admin</div>
+      </div>
+      <label>Full Name</label>
+      <input type="text" id="regName">
+      <label>Email</label>
+      <input type="text" id="regEmail">
+      <label>Password (min 6 characters)</label>
+      <input type="password" id="regPassword">
+      <div id="regStudentFields">
+        <label>Room Number</label>
+        <input type="text" id="regRoom">
+      </div>
+      <div id="regAdminFields" class="hidden">
+        <label>Admin Signup Code</label>
+        <input type="password" id="regAdminCode" placeholder="Given to you by the system owner">
+      </div>
+      <button class="btn full-w" id="registerBtn">Create Account</button>
+      <div class="err" id="regErr"></div>
+    </div>
+  </div>
+</div>
+
+<div id="appScreen">
+  <div class="topbar">
+    <h2 style="margin:0;font-size:1.05rem;">🏠 Hostel Complaints</h2>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span id="whoLabel" style="font-size:0.8rem;color:var(--muted);"></span>
+      <button class="btn-outline btn btn-sm" id="logoutBtn">Log out</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div id="studentView" class="hidden">
+      <div class="card">
+        <h3 style="margin:0 0 14px;">Submit a New Complaint</h3>
+        <label>Category</label>
+        <select id="cCategory">
+          <option>Electricity</option><option>Plumbing / Water</option>
+          <option>Wifi / Internet</option><option>Cleanliness</option>
+          <option>Furniture</option><option>Security</option>
+          <option>Food / Mess</option><option>Other</option>
+        </select>
+        <label>Description</label>
+        <textarea id="cDesc" placeholder="Describe the issue in detail — be specific, e.g. mention if there's a gas smell, exposed wiring, flooding, etc. Priority is assigned automatically from what you write here."></textarea>
+        <button class="btn" style="margin-top:14px;" id="submitComplaintBtn">Submit Complaint</button>
+        <div class="err" id="submitErr"></div>
+        <div id="submitNote" class="hidden" style="margin-top:10px;font-size:0.85rem;"></div>
+      </div>
+      <div class="stats" id="studentStats"></div>
+      <h3 style="margin:0 0 12px;">My Complaints</h3>
+      <div id="studentComplaintList"></div>
+    </div>
+
+    <div id="adminView" class="hidden">
+      <div id="emergencyBanner" class="hidden"></div>
+      <div class="stats" id="adminStats"></div>
+      <div class="filter-row">
+        <select id="filterStatus"><option value="">All Statuses</option><option>Pending</option><option>In Progress</option><option>Resolved</option></select>
+        <select id="filterCategory">
+          <option value="">All Categories</option><option>Electricity</option><option>Plumbing / Water</option>
+          <option>Wifi / Internet</option><option>Cleanliness</option><option>Furniture</option>
+          <option>Security</option><option>Food / Mess</option><option>Other</option>
+        </select>
+        <input type="text" id="filterSearch" placeholder="Search by name, room, or keyword...">
+      </div>
+      <div id="adminComplaintList"></div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
